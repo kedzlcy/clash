@@ -1,0 +1,33 @@
+name: Sync Fork
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # 每天午夜 UTC 时间执行一次
+  workflow_dispatch: # 允许手动触发
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          repository: 'kedzlcy/clash' # 这里填您 fork 的仓库的所有者和仓库名，例如 kedzlcy/clash
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Add Upstream Remote
+        run: git remote add upstream https://github.com/liandu2024/clash.git # 这里填上游仓库的地址，例如 https://github.com/liandu2024/clash.git
+
+      - name: Fetch Upstream
+        run: git fetch upstream
+
+      - name: Merge Upstream
+        run: git merge upstream/main # 确保这里的分支名是上游仓库的默认分支名，如 main 或 master
+
+      - name: Push Changes
+        run: |
+          git push origin $GITHUB_REF
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
